@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+	PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+	"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="City">
+	<!--引入pojo-->
+	<typeAlias alias="city" type="com.soshow.ssi.city.dto.City" />
+	<typeAlias alias="cityCondition" type="com.soshow.ssi.city.dto.CityCondition" />
+	
+	<sql id="queryCondition">
+		id,cityName,provinceId
+	</sql>
+	
+	<insert id="add" parameterClass="city"> 
+        INSERT INTO city(cityName, provinceId) VALUES (#cityName#,#provinceId# )  
+         <selectKey resultClass="long" keyProperty="id">  
+        	select last_insert_id() as ID from city limit 1  
+    	</selectKey>
+    </insert>  	
+	
+	<delete id="delete" parameterClass="java.lang.Long">  
+        DELETE FROM city WHERE id = #id#  
+    </delete>  
+	 
+	<update id="update" parameterClass="city">  
+        UPDATE city SET <!-- updateTime = sysdate  -->
+        <dynamic>
+			<isNotNull property="cityName" >
+		           cityName=#cityName#
+			</isNotNull>
+			<isNotNull prepend="," property="provinceId" >
+		           provinceId=#provinceId#
+			</isNotNull>
+	    </dynamic>
+        WHERE id = #id# 
+    </update> 
+	  
+	<!--通过id查找 -->
+	<select id="findById" resultClass="city">
+		SELECT  <include refid="queryCondition"/> FROM city where id = #id#
+	</select>
+
+	<!--分页查询-->
+	<select id="findPageByCondition" resultClass="city" parameterClass="cityCondition">
+		select <include refid="queryCondition"/> from  city 
+	    <dynamic prepend="where">
+			<isNotNull prepend="and" property="cityName" >
+		           cityName=#cityName#
+			</isNotNull>
+			<isNotNull prepend="and" property="provinceId" >
+		           provinceId=#provinceId#
+			</isNotNull>
+	    </dynamic>
+		limit #startRow#,#endRow# 
+	</select>
+	
+</sqlMap>
